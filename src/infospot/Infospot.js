@@ -11,13 +11,18 @@ import TWEEN from '@tweenjs/tween.js';
  * @param {string} [imageSrc=PANOLENS.DataImage.Info] - Image overlay info
  * @param {boolean} [animated=true] - Enable default hover animation
  */
-function Infospot ( scale = 300, imageSrc, animated ) {
-	
-    const duration = 500, scaleFactor = 1.3;
+function Infospot(
+    scale = 300,
+    imageSrc,
+    animated,
+    textureLoadedCallback = () => {}
+) {
+    const duration = 500,
+        scaleFactor = 1.3;
 
     imageSrc = imageSrc || DataImage.Info;
 
-    THREE.Sprite.call( this );
+    THREE.Sprite.call(this);
 
     this.type = 'infospot';
 
@@ -36,7 +41,7 @@ function Infospot ( scale = 300, imageSrc, animated ) {
 
     this.mode = MODES.NORMAL;
 
-    this.scale.set( scale, scale, 1 );
+    this.scale.set(scale, scale, 1);
     this.rotation.y = Math.PI;
 
     this.container = null;
@@ -44,7 +49,7 @@ function Infospot ( scale = 300, imageSrc, animated ) {
     this.originalRaycast = this.raycast;
 
     // Event Handler
-    this.HANDLER_FOCUS = null;	
+    this.HANDLER_FOCUS = null;
 
     this.material.side = THREE.DoubleSide;
     this.material.depthTest = false;
@@ -54,10 +59,10 @@ function Infospot ( scale = 300, imageSrc, animated ) {
     this.scaleUpAnimation = new TWEEN.Tween();
     this.scaleDownAnimation = new TWEEN.Tween();
 
-
-    const postLoad = function ( texture ) {
-
-        if ( !this.material ) { return; }
+    const postLoad = function (texture) {
+        if (!this.material) {
+            return;
+        }
 
         const ratio = texture.image.width / texture.image.height;
         const textureScale = new THREE.Vector3();
@@ -65,50 +70,52 @@ function Infospot ( scale = 300, imageSrc, animated ) {
         texture.image.width = texture.image.naturalWidth || 64;
         texture.image.height = texture.image.naturalHeight || 64;
 
-        this.scale.set( ratio * scale, scale, 1 );
+        this.scale.set(ratio * scale, scale, 1);
 
-        textureScale.copy( this.scale );
+        textureScale.copy(this.scale);
 
-        this.scaleUpAnimation = new TWEEN.Tween( this.scale )
-            .to( { x: textureScale.x * scaleFactor, y: textureScale.y * scaleFactor }, duration )
-            .easing( TWEEN.Easing.Elastic.Out );
+        this.scaleUpAnimation = new TWEEN.Tween(this.scale)
+            .to(
+                { x: textureScale.x * scaleFactor, y: textureScale.y * scaleFactor },
+                duration
+            )
+            .easing(TWEEN.Easing.Elastic.Out);
 
-        this.scaleDownAnimation = new TWEEN.Tween( this.scale )
-            .to( { x: textureScale.x, y: textureScale.y }, duration )
-            .easing( TWEEN.Easing.Elastic.Out );
+        this.scaleDownAnimation = new TWEEN.Tween(this.scale)
+            .to({ x: textureScale.x, y: textureScale.y }, duration)
+            .easing(TWEEN.Easing.Elastic.Out);
 
         this.material.map = texture;
         this.material.needsUpdate = true;
 
-    }.bind( this );
+        textureLoadedCallback();
+    }.bind(this);
 
     // Add show and hide animations
-    this.showAnimation = new TWEEN.Tween( this.material )
-        .to( { opacity: 1 }, duration )
-        .onStart( this.enableRaycast.bind( this, true ) )
-        .easing( TWEEN.Easing.Quartic.Out );
+    this.showAnimation = new TWEEN.Tween(this.material)
+        .to({ opacity: 1 }, duration)
+        .onStart(this.enableRaycast.bind(this, true))
+        .easing(TWEEN.Easing.Quartic.Out);
 
-    this.hideAnimation = new TWEEN.Tween( this.material )
-        .to( { opacity: 0 }, duration )
-        .onStart( this.enableRaycast.bind( this, false ) )
-        .easing( TWEEN.Easing.Quartic.Out );
+    this.hideAnimation = new TWEEN.Tween(this.material)
+        .to({ opacity: 0 }, duration)
+        .onStart(this.enableRaycast.bind(this, false))
+        .easing(TWEEN.Easing.Quartic.Out);
 
     // Attach event listeners
-    this.addEventListener( 'click', this.onClick );
-    this.addEventListener( 'hover', this.onHover );
-    this.addEventListener( 'hoverenter', this.onHoverStart );
-    this.addEventListener( 'hoverleave', this.onHoverEnd );
-    this.addEventListener( 'panolens-dual-eye-effect', this.onDualEyeEffect );
-    this.addEventListener( 'panolens-container', this.setContainer.bind( this ) );
-    this.addEventListener( 'dismiss', this.onDismiss );
-    this.addEventListener( 'panolens-infospot-focus', this.setFocusMethod );
+    this.addEventListener('click', this.onClick);
+    this.addEventListener('hover', this.onHover);
+    this.addEventListener('hoverenter', this.onHoverStart);
+    this.addEventListener('hoverleave', this.onHoverEnd);
+    this.addEventListener('panolens-dual-eye-effect', this.onDualEyeEffect);
+    this.addEventListener('panolens-container', this.setContainer.bind(this));
+    this.addEventListener('dismiss', this.onDismiss);
+    this.addEventListener('panolens-infospot-focus', this.setFocusMethod);
 
-    TextureLoader.load( imageSrc, postLoad );	
+    TextureLoader.load(imageSrc, postLoad);
+}
 
-};
-
-Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
-
+Infospot.prototype = Object.assign(Object.create(THREE.Sprite.prototype), {
     constructor: Infospot,
 
     /**
@@ -117,29 +124,21 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    setContainer: function ( data ) {
-
+    setContainer: function (data) {
         let container;
-	
-        if ( data instanceof HTMLElement ) {
-	
+
+        if (data instanceof HTMLElement) {
             container = data;
-	
-        } else if ( data && data.container ) {
-	
+        } else if (data && data.container) {
             container = data.container;
-	
         }
-	
+
         // Append element if exists
-        if ( container && this.element ) {
-	
-            container.appendChild( this.element );
-	
+        if (container && this.element) {
+            container.appendChild(this.element);
         }
-	
+
         this.container = container;
-	
     },
 
     /**
@@ -149,9 +148,7 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @return {HTMLElement} - The container of this infospot
      */
     getContainer: function () {
-
         return this.container;
-
     },
 
     /**
@@ -161,17 +158,13 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    onClick: function ( event ) {
-
-        if ( this.element && this.getContainer() ) {
-
-            this.onHoverStart( event );
+    onClick: function (event) {
+        if (this.element && this.getContainer()) {
+            this.onHoverStart(event);
 
             // Lock element
             this.lockHoverElement();
-
         }
-
     },
 
     /**
@@ -181,14 +174,10 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     onDismiss: function () {
-
-        if ( this.element ) {
-
+        if (this.element) {
             this.unlockHoverElement();
             this.onHoverEnd();
-
         }
-
     },
 
     /**
@@ -207,29 +196,31 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    onHoverStart: function ( event ) {
+    onHoverStart: function (event) {
+        if (!this.getContainer()) {
+            return;
+        }
 
-        if ( !this.getContainer() ) { return; }
-
-        const cursorStyle = this.cursorStyle || ( this.mode === MODES.NORMAL ? 'pointer' : 'default' );
+        const cursorStyle =
+      this.cursorStyle || (this.mode === MODES.NORMAL ? 'pointer' : 'default');
         const { scaleDownAnimation, scaleUpAnimation, element } = this;
 
         this.isHovering = true;
         this.container.style.cursor = cursorStyle;
-		
-        if ( this.animated ) {
 
+        if (this.animated) {
             scaleDownAnimation.stop();
             scaleUpAnimation.start();
-
         }
-		
-        if ( element && event.mouseEvent.clientX >= 0 && event.mouseEvent.clientY >= 0 ) {
 
+        if (
+            element &&
+      event.mouseEvent.clientX >= 0 &&
+      event.mouseEvent.clientY >= 0
+        ) {
             const { left, right, style } = element;
 
-            if ( this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO ) {
-
+            if (this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO) {
                 style.display = 'none';
                 left.style.display = 'block';
                 right.style.display = 'block';
@@ -237,21 +228,20 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
                 // Store element width for reference
                 element._width = left.clientWidth;
                 element._height = left.clientHeight;
-
             } else {
-
                 style.display = 'block';
-                if ( left ) { left.style.display = 'none'; }
-                if ( right ) { right.style.display = 'none'; }
+                if (left) {
+                    left.style.display = 'none';
+                }
+                if (right) {
+                    right.style.display = 'none';
+                }
 
                 // Store element width for reference
                 element._width = element.clientWidth;
                 element._height = element.clientHeight;
-
             }
-			
         }
-
     },
 
     /**
@@ -261,33 +251,33 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     onHoverEnd: function () {
-
-        if ( !this.getContainer() ) { return; }
+        if (!this.getContainer()) {
+            return;
+        }
 
         const { scaleDownAnimation, scaleUpAnimation, element } = this;
 
         this.isHovering = false;
         this.container.style.cursor = 'default';
 
-        if ( this.animated ) {
-
+        if (this.animated) {
             scaleUpAnimation.stop();
             scaleDownAnimation.start();
-
         }
 
-        if ( element && !this.element.locked ) {
-
+        if (element && !this.element.locked) {
             const { left, right, style } = element;
 
             style.display = 'none';
-            if ( left ) { left.style.display = 'none'; }
-            if ( right ) { right.style.display = 'none'; }
+            if (left) {
+                left.style.display = 'none';
+            }
+            if (right) {
+                right.style.display = 'none';
+            }
 
             this.unlockHoverElement();
-
         }
-
     },
 
     /**
@@ -297,9 +287,10 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    onDualEyeEffect: function ( event ) {
-		
-        if ( !this.getContainer() ) { return; }
+    onDualEyeEffect: function (event) {
+        if (!this.getContainer()) {
+            return;
+        }
 
         let element, halfWidth, halfHeight;
 
@@ -310,39 +301,30 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
         halfWidth = this.container.clientWidth / 2;
         halfHeight = this.container.clientHeight / 2;
 
-        if ( !element ) {
-
+        if (!element) {
             return;
-
         }
 
-        if ( !element.left && !element.right ) {
-
-            element.left = element.cloneNode( true );
-            element.right = element.cloneNode( true );
-
+        if (!element.left && !element.right) {
+            element.left = element.cloneNode(true);
+            element.right = element.cloneNode(true);
         }
 
-        if ( this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO ) {
-
+        if (this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO) {
             element.left.style.display = element.style.display;
             element.right.style.display = element.style.display;
             element.style.display = 'none';
-
         } else {
-
             element.style.display = element.left.style.display;
             element.left.style.display = 'none';
             element.right.style.display = 'none';
-
         }
 
         // Update elements translation
-        this.translateElement( halfWidth, halfHeight );
+        this.translateElement(halfWidth, halfHeight);
 
-        this.container.appendChild( element.left );
-        this.container.appendChild( element.right );
-
+        this.container.appendChild(element.left);
+        this.container.appendChild(element.right);
     },
 
     /**
@@ -352,12 +334,9 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    translateElement: function ( x, y ) {
-
-        if ( !this.element._width || !this.element._height || !this.getContainer() ) {
-
+    translateElement: function (x, y) {
+        if (!this.element._width || !this.element._height || !this.getContainer()) {
             return;
-
         }
 
         let left, top, element, width, height, delta, container;
@@ -371,25 +350,40 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
         left = x - width;
         top = y - height - delta;
 
-        if ( ( this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO ) 
-				&& element.left && element.right
-				&& !( x === container.clientWidth / 2 && y === container.clientHeight / 2 ) ) {
+        if (
+            (this.mode === MODES.CARDBOARD || this.mode === MODES.STEREO) &&
+      element.left &&
+      element.right &&
+      !(x === container.clientWidth / 2 && y === container.clientHeight / 2)
+        ) {
+            left =
+        container.clientWidth / 4 - width + (x - container.clientWidth / 2);
+            top =
+        container.clientHeight / 2 -
+        height -
+        delta +
+        (y - container.clientHeight / 2);
 
-            left = container.clientWidth / 4 - width + ( x - container.clientWidth / 2 );
-            top = container.clientHeight / 2 - height - delta + ( y - container.clientHeight / 2 );
-
-            this.setElementStyle( 'transform', element.left, 'translate(' + left + 'px, ' + top + 'px)' );
+            this.setElementStyle(
+                'transform',
+                element.left,
+                'translate(' + left + 'px, ' + top + 'px)'
+            );
 
             left += container.clientWidth / 2;
 
-            this.setElementStyle( 'transform', element.right, 'translate(' + left + 'px, ' + top + 'px)' );
-
+            this.setElementStyle(
+                'transform',
+                element.right,
+                'translate(' + left + 'px, ' + top + 'px)'
+            );
         } else {
-
-            this.setElementStyle( 'transform', element, 'translate(' + left + 'px, ' + top + 'px)' );
-
+            this.setElementStyle(
+                'transform',
+                element,
+                'translate(' + left + 'px, ' + top + 'px)'
+            );
         }
-
     },
 
     /**
@@ -400,16 +394,12 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    setElementStyle: function ( type, element, value ) {
-
+    setElementStyle: function (type, element, value) {
         const style = element.style;
 
-        if ( type === 'transform' ) {
-
+        if (type === 'transform') {
             style.webkitTransform = style.msTransform = style.transform = value;
-
         }
-
     },
 
     /**
@@ -418,14 +408,10 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    setText: function ( text ) {
-
-        if ( this.element ) {
-
+    setText: function (text) {
+        if (this.element) {
             this.element.textContent = text;
-
         }
-
     },
 
     /**
@@ -433,10 +419,8 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    setCursorHoverStyle: function ( style ) {
-
+    setCursorHoverStyle: function (style) {
         this.cursorStyle = style;
-
     },
 
     /**
@@ -446,11 +430,9 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    addHoverText: function ( text, delta = 40 ) {
-
-        if ( !this.element ) {
-
-            this.element = document.createElement( 'div' );
+    addHoverText: function (text, delta = 40) {
+        if (!this.element) {
+            this.element = document.createElement('div');
             this.element.style.display = 'none';
             this.element.style.color = '#fff';
             this.element.style.top = 0;
@@ -459,13 +441,11 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
             this.element.style.textShadow = '0 0 3px #000000';
             this.element.style.fontFamily = '"Trebuchet MS", Helvetica, sans-serif';
             this.element.style.position = 'absolute';
-            this.element.classList.add( 'panolens-infospot' );
+            this.element.classList.add('panolens-infospot');
             this.element.verticalDelta = delta;
-
         }
 
-        this.setText( text );
-
+        this.setText(text);
     },
 
     /**
@@ -475,19 +455,15 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    addHoverElement: function ( el, delta = 40 ) {
-
-        if ( !this.element ) { 
-
-            this.element = el.cloneNode( true );
+    addHoverElement: function (el, delta = 40) {
+        if (!this.element) {
+            this.element = el.cloneNode(true);
             this.element.style.display = 'none';
             this.element.style.top = 0;
             this.element.style.position = 'absolute';
-            this.element.classList.add( 'panolens-infospot' );
+            this.element.classList.add('panolens-infospot');
             this.element.verticalDelta = delta;
-
         }
-
     },
 
     /**
@@ -496,28 +472,20 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     removeHoverElement: function () {
-
-        if ( this.element ) { 
-
-            if ( this.element.left ) {
-
-                this.container.removeChild( this.element.left );
+        if (this.element) {
+            if (this.element.left) {
+                this.container.removeChild(this.element.left);
                 this.element.left = null;
-
             }
 
-            if ( this.element.right ) {
-
-                this.container.removeChild( this.element.right );
+            if (this.element.right) {
+                this.container.removeChild(this.element.right);
                 this.element.right = null;
-
             }
 
-            this.container.removeChild( this.element );
+            this.container.removeChild(this.element);
             this.element = null;
-
         }
-
     },
 
     /**
@@ -526,13 +494,9 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     lockHoverElement: function () {
-
-        if ( this.element ) { 
-
+        if (this.element) {
             this.element.locked = true;
-
         }
-
     },
 
     /**
@@ -541,13 +505,9 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     unlockHoverElement: function () {
-
-        if ( this.element ) { 
-
+        if (this.element) {
             this.element.locked = false;
-
         }
-
     },
 
     /**
@@ -556,18 +516,12 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    enableRaycast: function ( enabled = true ) {
-
-        if ( enabled ) {
-
+    enableRaycast: function (enabled = true) {
+        if (enabled) {
             this.raycast = this.originalRaycast;
-
         } else {
-
             this.raycast = () => {};
-
         }
-
     },
 
     /**
@@ -576,22 +530,16 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    show: function ( delay = 0 ) {
-
+    show: function (delay = 0) {
         const { animated, hideAnimation, showAnimation, material } = this;
 
-        if ( animated ) {
-
+        if (animated) {
             hideAnimation.stop();
-            showAnimation.delay( delay ).start();
-
+            showAnimation.delay(delay).start();
         } else {
-
-            this.enableRaycast( true );
+            this.enableRaycast(true);
             material.opacity = 1;
-
         }
-
     },
 
     /**
@@ -600,27 +548,21 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    hide: function ( delay = 0 ) {
-
+    hide: function (delay = 0) {
         const { animated, hideAnimation, showAnimation, material, element } = this;
 
-        if ( element ) {
+        if (element) {
             const { style } = element;
             style.display = 'none';
         }
 
-        if ( animated ) {
-
+        if (animated) {
             showAnimation.stop();
-            hideAnimation.delay( delay ).start();
-
+            hideAnimation.delay(delay).start();
         } else {
-
-            this.enableRaycast( false );
+            this.enableRaycast(false);
             material.opacity = 0;
-
         }
-		
     },
 
     /**
@@ -628,14 +570,10 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    setFocusMethod: function ( event ) {
-
-        if ( event ) {
-
+    setFocusMethod: function (event) {
+        if (event) {
             this.HANDLER_FOCUS = event.method;
-
         }
-
     },
 
     /**
@@ -645,15 +583,11 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @memberOf Infospot
      * @instance
      */
-    focus: function ( duration, easing ) {
-
-        if ( this.HANDLER_FOCUS ) {
-
-            this.HANDLER_FOCUS( this.position, duration, easing );
+    focus: function (duration, easing) {
+        if (this.HANDLER_FOCUS) {
+            this.HANDLER_FOCUS(this.position, duration, easing);
             this.onDismiss();
-
         }
-
     },
 
     /**
@@ -662,24 +596,28 @@ Infospot.prototype = Object.assign( Object.create( THREE.Sprite.prototype ), {
      * @instance
      */
     dispose: function () {
-
         const { geometry, material } = this;
         const { map } = material;
 
         this.removeHoverElement();
 
-        if ( this.parent ) {
-
-            this.parent.remove( this );
-
+        if (this.parent) {
+            this.parent.remove(this);
         }
 
-        if ( map ) { map.dispose(); material.map = null; }
-        if ( geometry ) { geometry.dispose(); this.geometry = null; }
-        if ( material ) { material.dispose(); this.material = null; }
-
-    }
-
-} );
+        if (map) {
+            map.dispose();
+            material.map = null;
+        }
+        if (geometry) {
+            geometry.dispose();
+            this.geometry = null;
+        }
+        if (material) {
+            material.dispose();
+            this.material = null;
+        }
+    },
+});
 
 export { Infospot };
