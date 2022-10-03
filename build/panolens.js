@@ -59,6 +59,26 @@
 	const MODES = { UNKNOWN: 0, NORMAL: 1, CARDBOARD: 2, STEREO: 3 };
 
 	/**
+	 * CONTROL_BUTTONS
+	 * @module CONTROL_BUTTONS
+	 * @example PANOLENS.VIEWER.CONTROL_BUTTONS
+	 * @property {string} FULLSCREEN
+	 * @property {string} SETTING
+	 * @property {string} VIDEO
+	 */
+	const CONTROL_BUTTONS = { FULLSCREEN: 'fullscreen', SETTING: 'setting', VIDEO: 'video' };
+
+	/**
+	 * OUTPUTS
+	 * @module OUTPUTS
+	 * @example PANOLENS.VIEWER.OUTPUTS
+	 * @property {string} NONE
+	 * @property {string} CONSOLE
+	 * @property {string} OVERLAY
+	 */
+	const OUTPUTS = { NONE: 'none', CONSOLE: 'console', OVERLAY: 'overlay' };
+
+	/**
 	 * Data URI Images
 	 * @module DataImage
 	 * @example PANOLENS.DataImage.Info
@@ -128,12 +148,21 @@
 
 	            if (onLoad) {
 
-	                setTimeout(function () {
+	                if ( cached.complete && cached.src ) {
+	                    setTimeout( function () {
 
-	                    onProgress({loaded: 1, total: 1});
-	                    onLoad(cached);
+	                        onProgress( { loaded: 1, total: 1 } );
+	                        onLoad( cached );
 
-	                }, 0);
+	                    }, 0 );
+	                } else {
+	                    cached.addEventListener( 'load', function () {
+
+	                        onProgress( { loaded: 1, total: 1 } );
+	                        onLoad( cached );
+
+	                    }, false );
+	                }
 
 	            }
 
@@ -167,6 +196,7 @@
 	        request = new window.XMLHttpRequest();
 	        request.open('GET', url, true);
 	        if (process.env.npm_lifecycle_event !== 'test') {
+	            /* istanbul ignore next */
 	            request.onreadystatechange = function () {
 	                if (this.readyState === 4 && this.status >= 400) {
 	                    onError();
@@ -8848,7 +8878,10 @@
 	    onTap: function ( event, type ) {
 
 	        const { left, top } = this.container.getBoundingClientRect();
-	        const { clientWidth, clientHeight } = this.container;
+	        const fitWindowScale = document && document.documentElement && document.documentElement.style && document.documentElement.style.getPropertyValue && document.documentElement.style.getPropertyValue('--fit-window-scale') || 1;
+	        const appScale = parseFloat(fitWindowScale);
+	        const clientWidth = this.container.clientWidth * appScale;
+	        const clientHeight = this.container.clientHeight * appScale;
 
 	        this.raycasterPoint.x = ( ( event.clientX - left ) / clientWidth ) * 2 - 1;
 	        this.raycasterPoint.y = - ( ( event.clientY - top ) / clientHeight ) * 2 + 1;
@@ -9566,6 +9599,7 @@
 
 	exports.BasicPanorama = BasicPanorama;
 	exports.CONTROLS = CONTROLS;
+	exports.CONTROL_BUTTONS = CONTROL_BUTTONS;
 	exports.CameraPanorama = CameraPanorama;
 	exports.CubePanorama = CubePanorama;
 	exports.CubeTextureLoader = CubeTextureLoader;
@@ -9579,6 +9613,7 @@
 	exports.LittlePlanet = LittlePlanet;
 	exports.MODES = MODES;
 	exports.Media = Media;
+	exports.OUTPUTS = OUTPUTS;
 	exports.Panorama = Panorama;
 	exports.REVISION = REVISION;
 	exports.Reticle = Reticle;

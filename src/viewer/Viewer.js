@@ -1451,9 +1451,8 @@ Viewer.prototype = Object.assign( Object.create( THREE.EventDispatcher.prototype
     onTap: function ( event, type ) {
 
         const { left, top } = this.container.getBoundingClientRect();
-        const appScale = parseFloat(
-          document?.documentElement?.style?.getPropertyValue?.('--fit-window-scale')
-        ) || 1;
+        const fitWindowScale = document && document.documentElement && document.documentElement.style && document.documentElement.style.getPropertyValue && document.documentElement.style.getPropertyValue('--fit-window-scale') || 1;
+        const appScale = parseFloat(fitWindowScale);
         const clientWidth = this.container.clientWidth * appScale;
         const clientHeight = this.container.clientHeight * appScale;
 
