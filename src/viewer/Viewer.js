@@ -1451,7 +1451,10 @@ Viewer.prototype = Object.assign( Object.create( THREE.EventDispatcher.prototype
     onTap: function ( event, type ) {
 
         const { left, top } = this.container.getBoundingClientRect();
-        const { clientWidth, clientHeight } = this.container;
+        const fitWindowScale = document && document.documentElement && document.documentElement.style && document.documentElement.style.getPropertyValue && document.documentElement.style.getPropertyValue('--fit-window-scale') || 1;
+        const appScale = parseFloat(fitWindowScale);
+        const clientWidth = this.container.clientWidth * appScale;
+        const clientHeight = this.container.clientHeight * appScale;
 
         this.raycasterPoint.x = ( ( event.clientX - left ) / clientWidth ) * 2 - 1;
         this.raycasterPoint.y = - ( ( event.clientY - top ) / clientHeight ) * 2 + 1;
