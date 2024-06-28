@@ -1,6 +1,6 @@
 {
   "name": "panolens",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "description": "Javascript panorama viewer",
   "main": "build/panolens.js",
   "jsnext:main": "build/panolens.module.js",
@@ -19,7 +19,7 @@
     "test": "test"
   },
   "scripts": {
-    "build-closure": "npm run lint && rollup -c && java -jar node_modules/google-closure-compiler-java/compiler.jar --rewrite_polyfills=false --warning_level=VERBOSE --hide_warnings_for='build/panolens.js' --jscomp_off=globalThis --jscomp_off=checkTypes --jscomp_off=checkVars --jscomp_off=suspiciousCode --jscomp_off=misplacedTypeAnnotation --jscomp_off=nonStandardJsDocs --language_in=ECMASCRIPT6 --js build/panolens.js --js_output_file build/panolens.min.js",
+    "build-closure": "npm run lint && rollup -c && java -jar node_modules/google-closure-compiler-java/compiler.jar --rewrite_polyfills=false --warning_level=VERBOSE --hide_warnings_for='build/panolens.js' --jscomp_off=globalThis --jscomp_off=checkTypes --jscomp_off=checkVars --jscomp_off=suspiciousCode --jscomp_off=misplacedTypeAnnotation --jscomp_off=nonStandardJsDocs --language_in=ECMASCRIPT_2017 --js build/panolens.js --js_output_file build/panolens.min.js",
     "build": "npm run lint && rollup -c",
     "dev": "concurrently --names \"ROLLUP,HTTP\" \"rollup -c -w -m inline\" \"http-server -p 8080\"",
     "dev-https": "concurrently --names \"ROLLUP,HTTP\" \"rollup -c -w -m inline\" \"ws -p 8080 --https\"",
@@ -53,41 +53,18 @@
   "homepage": "https://pchen66.github.io/Panolens/",
   "eslintConfig": {
     "parserOptions": {
-      "ecmaVersion": 6,
+      "ecmaVersion": 8,
       "sourceType": "module"
     },
     "rules": {
-      "no-unused-expressions": "error",
-      "no-unused-vars": "error",
+      "no-unused-expressions": "warn",
+      "no-unused-vars": "warn",
       "semi": 2,
-      "indent": [
-        "error",
-        4
-      ],
-      "spaced-comment": [
-        "error",
-        "always"
-      ],
-      "multiline-comment-style": [
-        "error",
-        "starred-block"
-      ],
-      "linebreak-style": [
-        "error",
-        "unix"
-      ],
       "key-spacing": [
         "error",
         {
           "beforeColon": false,
           "afterColon": true
-        }
-      ],
-      "quotes": [
-        "error",
-        "single",
-        {
-          "allowTemplateLiterals": true
         }
       ]
     }
@@ -105,7 +82,7 @@
     ]
   },
   "devDependencies": {
-    "@tweenjs/tween.js": "^17.4.0",
+    "@tweenjs/tween.js": "^17.6.0",
     "ava": "^2.1.0",
     "browser-env": "^3.2.6",
     "concurrently": "^4.1.0",
@@ -125,7 +102,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {
-    "three": "^0.105.2"
+    "three": "^0.117.0"
   },
   "jspm": {
     "files": [
